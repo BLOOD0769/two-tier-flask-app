@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Two-Tier Guestbook App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0 12px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1a252f;
+        }
+        .entry {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+        .entry .name {
+            font-weight: bold;
+        }
+        .entry .time {
+            font-size: 0.8em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>📖 Guestbook</h1>
+    <p>A simple two-tier app: Flask (this page) talks to a MySQL database.</p>
+
+    <form action="/add" method="POST">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="message">Your message</label>
+        <textarea id="message" name="message" rows="3" required></textarea>
+
+        <button type="submit">Sign the guestbook</button>
+    </form>
+
+    <h2>Entries</h2>
+    {% if entries %}
+        {% for entry in entries %}
+            <div class="entry">
+                <div class="name">{{ entry.name }}</div>
+                <div>{{ entry.message }}</div>
+                <div class="time">{{ entry.created_at }}</div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No entries yet. Be the first to sign!</p>
+    {% endif %}
+</body>
+</html>

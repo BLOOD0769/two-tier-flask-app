@@ -1,0 +1,53 @@
+# ---------------------------------------------------------------
+# docker-compose.yml - defines and wires together our two containers
+# ---------------------------------------------------------------
+version: "3.8"
+
+services:
+
+  # ---------------- Tier 1: Flask web app ----------------
+  web:
+    build: .                 # build the image from the Dockerfile in this folder
+    container_name: flask_web
+    ports:
+      - "5000:5000"           # host_port:container_port - visit localhost:5000
+    depends_on:
+      - db                    # wait for the "db" service to start first
+                               # (note: this only waits for the container to start,
+                               #  NOT for MySQL to be ready - that's why app.py retries)
+    environment:
+      DB_HOST: db              # "db" = the service name below, Docker resolves this automatically
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+    networks:
+      - app_network
+    restart: on-failure
+
+  # ---------------- Tier 2: MySQL database ----------------
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql                        # persists data even if container is removed
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # auto-runs on first startup only
+    networks:
+      - app_network
+    restart: on-failure
+
+# Named volume for MySQL data - this survives `docker-compose down`
+# (data is only lost if you explicitly run `docker-compose down -v`)
+volumes:
+  db_data:
+
+# Shared network so "web" and "db" containers can talk to each other by name
+networks:
+  app_network:
+    driver: bridge
